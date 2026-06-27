@@ -1,0 +1,1821 @@
+<!--
+╔══════════════════════════════════════════════════════════════╗
+║                    V A N T A G E                            ║
+║     Real-Time Digital Zeitgeist Observatory                ║
+║     Built with Hacker News API + Google Gemini AI          ║
+╚══════════════════════════════════════════════════════════════╝
+-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VANTAGE — Real-Time Digital Zeitgeist Observatory</title>
+
+    <!-- ============================================================
+    GOOGLE FONTS
+    - Fraunces: Expressive serif for display headlines (italic/swash variants)
+    - Space Grotesk: Bold geometric sans for subheadings & accents
+    - Inter: Clean, highly readable body text
+    ============================================================ -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,300;1,400;1,500;1,600;1,700;1,800;1,900&family=Space+Grotesk:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+
+    <style>
+        /* ============================================================
+        CSS CUSTOM PROPERTIES — Design System Colors
+        Background: #FDFBF7 (Warm Off-White)
+        Deep Text: #12101A (Almost black with warm tint)
+        Primary Accent: #E85D04 (Vibrant Vermilion/Orange)
+        Secondary Accent: #2EC4B6 (Vibrant Teal)
+        Tertiary Accent: #F9C846 (Mustard Yellow)
+        Muted Element: #5E5A6B (Soft Charcoal)
+        Card BG: #FFFFFF with 1px border #E8E6E1
+        ============================================================ */
+        :root {
+            --bg: #FDFBF7;
+            --bg-r: 253;
+            --bg-g: 251;
+            --bg-b: 247;
+            --text-deep: #12101A;
+            --accent-primary: #E85D04;
+            --accent-secondary: #2EC4B6;
+            --accent-secondary-r: 46;
+            --accent-secondary-g: 196;
+            --accent-secondary-b: 182;
+            --accent-tertiary: #F9C846;
+            --muted: #5E5A6B;
+            --card-bg: #FFFFFF;
+            --card-border: #E8E6E1;
+            --marquee-height: 44px;
+            --transition-snappy: 0.3s cubic-bezier(0.22, 0.61, 0.36, 1);
+            --transition-slow: 0.6s cubic-bezier(0.22, 0.61, 0.36, 1);
+        }
+
+        /* ============================================================
+        GLOBAL RESET & BASE STYLES
+        ============================================================ */
+        *,
+        *::before,
+        *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        html {
+            scroll-behavior: smooth;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            font-size: 16px;
+            background-color: var(--bg);
+            transition: background-color 0.8s ease;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            color: var(--text-deep);
+            background-color: var(--bg);
+            line-height: 1.6;
+            overflow-x: hidden;
+            min-height: 100vh;
+            transition: background-color 0.5s ease;
+            /* The background will subtly shift via JS on scroll */
+        }
+
+        /* ============================================================
+        MARQUEE TICKER — Persistent slow-scrolling bar at top
+        Fixed position, overlays all sections, infinite loop
+        ============================================================ */
+        .marquee-ticker {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: var(--marquee-height);
+            z-index: 1000;
+            background: var(--text-deep);
+            color: #FDFBF7;
+            display: flex;
+            align-items: center;
+            overflow: hidden;
+            font-family: 'Space Grotesk', sans-serif;
+            font-weight: 600;
+            font-size: 0.8rem;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            border-bottom: 2px solid var(--accent-primary);
+            user-select: none;
+        }
+
+        .marquee-ticker__track {
+            display: flex;
+            white-space: nowrap;
+            animation: marquee-scroll 60s linear infinite;
+            will-change: transform;
+        }
+
+        .marquee-ticker__content {
+            display: flex;
+            align-items: center;
+            gap: 0;
+            flex-shrink: 0;
+            padding-right: 3rem;
+        }
+
+        .marquee-ticker__item {
+            display: inline-flex;
+            align-items: center;
+            padding: 0 1.5rem;
+            color: #FDFBF7;
+            text-decoration: none;
+            transition: color 0.2s ease;
+            cursor: default;
+        }
+
+        .marquee-ticker__item:hover {
+            color: var(--accent-tertiary);
+        }
+
+        .marquee-ticker__separator {
+            display: inline-block;
+            width: 6px;
+            height: 6px;
+            background: var(--accent-primary);
+            border-radius: 50%;
+            flex-shrink: 0;
+            opacity: 0.8;
+        }
+
+        @keyframes marquee-scroll {
+            0% {
+                transform: translateX(0);
+            }
+            100% {
+                transform: translateX(-50%);
+            }
+        }
+
+        /* Pause marquee on hover for readability */
+        .marquee-ticker:hover .marquee-ticker__track {
+            animation-play-state: paused;
+        }
+
+        /* ============================================================
+        SECTION BASE — Every major section is full viewport height
+        ============================================================ */
+        .section {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: calc(var(--marquee-height) + 2rem) 3rem 2rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .section__inner {
+            width: 100%;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        /* ============================================================
+        SECTION 1: HERO — Split layout (40% left / 60% right)
+        Left: Live clock + Buzz counter
+        Right: #1 Headline in massive Fraunces + Vibe badge
+        ============================================================ */
+        .hero {
+            display: flex;
+            flex-direction: row;
+            min-height: 100vh;
+            padding-top: calc(var(--marquee-height) + 2rem);
+            gap: 0;
+        }
+
+        .hero__left {
+            flex: 0 0 40%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            padding: 3rem 2rem 3rem 3rem;
+            border-right: 1px solid var(--card-border);
+        }
+
+        .hero__right {
+            flex: 0 0 60%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            padding: 3rem 3rem 3rem 2rem;
+            position: relative;
+        }
+
+        /* Live Clock */
+        .clock {
+            font-family: 'Space Grotesk', sans-serif;
+            font-weight: 300;
+            color: var(--muted);
+            letter-spacing: 0.04em;
+            margin-bottom: 0.5rem;
+        }
+
+        .clock__date {
+            font-size: 1rem;
+            text-transform: uppercase;
+            letter-spacing: 0.12em;
+            color: var(--muted);
+        }
+
+        .clock__time {
+            font-size: 3.5rem;
+            font-weight: 700;
+            color: var(--text-deep);
+            line-height: 1;
+            letter-spacing: -0.02em;
+            font-variant-numeric: tabular-nums;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .clock__seconds {
+            font-size: 1.2rem;
+            font-weight: 400;
+            color: var(--accent-primary);
+            vertical-align: super;
+            margin-left: 0.2rem;
+        }
+
+        /* Live Buzz Counter */
+        .live-buzz {
+            margin-top: 2.5rem;
+            padding-top: 2rem;
+            border-top: 1px solid var(--card-border);
+        }
+
+        .live-buzz__label {
+            font-family: 'Space Grotesk', sans-serif;
+            font-weight: 600;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.15em;
+            color: var(--accent-primary);
+            margin-bottom: 0.3rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .live-buzz__dot {
+            display: inline-block;
+            width: 9px;
+            height: 9px;
+            background: var(--accent-primary);
+            border-radius: 50%;
+            animation: pulse-dot 1.5s ease-in-out infinite;
+        }
+
+        @keyframes pulse-dot {
+            0%,
+            100% {
+                opacity: 1;
+                transform: scale(1);
+            }
+            50% {
+                opacity: 0.35;
+                transform: scale(1.8);
+            }
+        }
+
+        .live-buzz__number {
+            font-family: 'Inter', sans-serif;
+            font-size: 5rem;
+            font-weight: 800;
+            color: var(--text-deep);
+            line-height: 1;
+            letter-spacing: -0.03em;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .live-buzz__suffix {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 1rem;
+            font-weight: 500;
+            color: var(--muted);
+            margin-left: 0.3rem;
+        }
+
+        /* Headline */
+        .headline-display {
+            font-family: 'Fraunces', 'Georgia', serif;
+            font-size: clamp(3rem, 5.5vw, 6.5rem);
+            font-weight: 800;
+            line-height: 1.05;
+            letter-spacing: -0.02em;
+            color: var(--text-deep);
+            margin-bottom: 1.5rem;
+            word-break: break-word;
+        }
+
+        .headline-display em {
+            font-style: italic;
+            color: var(--accent-primary);
+        }
+
+        /* Vibe Badge */
+        .vibe-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-family: 'Space Grotesk', sans-serif;
+            font-weight: 700;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            padding: 0.6rem 1.4rem;
+            border-radius: 100px;
+            background: #FFFFFF;
+            border: 2px solid var(--card-border);
+            color: var(--text-deep);
+            transition: all var(--transition-snappy);
+            align-self: flex-start;
+        }
+
+        .vibe-badge--active {
+            border-color: var(--accent-primary);
+            background: #FFF7F2;
+        }
+
+        .vibe-badge__dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: var(--accent-primary);
+            flex-shrink: 0;
+        }
+
+        /* AI Insight offline banner */
+        .ai-offline-banner {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-family: 'Space Grotesk', sans-serif;
+            font-weight: 500;
+            font-size: 0.8rem;
+            letter-spacing: 0.05em;
+            color: var(--muted);
+            padding: 0.5rem 1rem;
+            border: 1px dashed var(--card-border);
+            border-radius: 100px;
+            margin-top: 1rem;
+        }
+
+        /* ============================================================
+        SECTION 2: THE PULSE — Split layout
+        Left: "Disruption Meter" animated horizontal bar
+        Right: AI "Essence Summary" in a styled blockquote
+        ============================================================ */
+        .pulse {
+            display: flex;
+            flex-direction: row;
+            min-height: 100vh;
+            gap: 0;
+            background: #FAF8F4;
+        }
+
+        .pulse__left {
+            flex: 0 0 45%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            padding: 3rem;
+            border-right: 1px solid var(--card-border);
+        }
+
+        .pulse__right {
+            flex: 0 0 55%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            padding: 3rem;
+        }
+
+        .section-label {
+            font-family: 'Space Grotesk', sans-serif;
+            font-weight: 600;
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 0.2em;
+            color: var(--accent-secondary);
+            margin-bottom: 0.8rem;
+        }
+
+        .section-heading {
+            font-family: 'Fraunces', 'Georgia', serif;
+            font-size: 2.8rem;
+            font-weight: 700;
+            line-height: 1.15;
+            letter-spacing: -0.01em;
+            color: var(--text-deep);
+            margin-bottom: 2rem;
+        }
+
+        /* Disruption Meter */
+        .disruption-meter {
+            width: 100%;
+            margin-top: 1rem;
+        }
+
+        .disruption-meter__stats {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            margin-bottom: 0.8rem;
+            font-family: 'Space Grotesk', sans-serif;
+        }
+
+        .disruption-meter__label {
+            font-weight: 600;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: var(--muted);
+        }
+
+        .disruption-meter__value {
+            font-weight: 700;
+            font-size: 1.4rem;
+            color: var(--accent-primary);
+            font-variant-numeric: tabular-nums;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .disruption-meter__track {
+            width: 100%;
+            height: 12px;
+            background: #E8E6E1;
+            border-radius: 100px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .disruption-meter__fill {
+            height: 100%;
+            background: var(--accent-primary);
+            border-radius: 100px;
+            width: 0%;
+            /* Animated via JS */
+            transition: width 1.5s cubic-bezier(0.22, 0.61, 0.36, 1);
+            position: relative;
+        }
+
+        .disruption-meter__fill::after {
+            content: '';
+            position: absolute;
+            right: 0;
+            top: 0;
+            bottom: 0;
+            width: 20px;
+            background: rgba(255, 255, 255, 0.5);
+            border-radius: 100px;
+            animation: shimmer 2s ease-in-out infinite;
+        }
+
+        @keyframes shimmer {
+            0%,
+            100% {
+                opacity: 0.3;
+            }
+            50% {
+                opacity: 0.9;
+            }
+        }
+
+        .disruption-meter__context {
+            margin-top: 0.6rem;
+            font-family: 'Inter', sans-serif;
+            font-size: 0.8rem;
+            color: var(--muted);
+            letter-spacing: 0.02em;
+        }
+
+        /* Essence Blockquote */
+        .essence-blockquote {
+            font-family: 'Fraunces', 'Georgia', serif;
+            font-size: 2rem;
+            font-weight: 500;
+            font-style: italic;
+            line-height: 1.3;
+            color: var(--text-deep);
+            padding: 2rem 0 2rem 2rem;
+            border-left: 5px solid var(--accent-secondary);
+            position: relative;
+            quotes: "“" "”" "‘" "’";
+        }
+
+        .essence-blockquote::before {
+            content: "“";
+            position: absolute;
+            left: -1.8rem;
+            top: -0.8rem;
+            font-size: 7rem;
+            color: var(--accent-secondary);
+            opacity: 0.25;
+            font-family: 'Fraunces', serif;
+            line-height: 1;
+            pointer-events: none;
+        }
+
+        .essence-blockquote__attribution {
+            display: block;
+            margin-top: 1.5rem;
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.12em;
+            color: var(--accent-secondary);
+            font-style: normal;
+        }
+
+        /* ============================================================
+        SECTION 3: TRENDING GRID — Asymmetrical 3-column grid
+        First story spans 2 columns, rest take 1 column each
+        ============================================================ */
+        .trending {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: calc(var(--marquee-height) + 3rem) 3rem 3rem;
+            background: #FDFBF7;
+        }
+
+        .trending__inner {
+            width: 100%;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .trending__header {
+            margin-bottom: 2.5rem;
+            display: flex;
+            align-items: baseline;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .trending__heading {
+            font-family: 'Fraunces', 'Georgia', serif;
+            font-size: 2.8rem;
+            font-weight: 700;
+            letter-spacing: -0.01em;
+            color: var(--text-deep);
+        }
+
+        .trending__subheading {
+            font-family: 'Space Grotesk', sans-serif;
+            font-weight: 500;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.12em;
+            color: var(--muted);
+        }
+
+        /* Grid */
+        .trending-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1.25rem;
+            grid-auto-rows: auto;
+        }
+
+        .trending-card {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 4px;
+            padding: 1.5rem;
+            cursor: pointer;
+            transition: all var(--transition-snappy);
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            gap: 0.6rem;
+            min-height: 140px;
+            /* Scroll-reveal initial state */
+            opacity: 0;
+            transform: translateY(40px) scale(1.03);
+            will-change: transform, opacity;
+        }
+
+        .trending-card--revealed {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+        }
+
+        /* First card spans 2 columns and is taller */
+        .trending-card--featured {
+            grid-column: span 2;
+            min-height: 220px;
+            padding: 2rem;
+            border-left: 5px solid var(--accent-primary);
+        }
+
+        .trending-card:hover {
+            transform: translateY(-8px);
+            border-color: var(--accent-secondary);
+            box-shadow: 0 8px 30px rgba(18, 16, 26, 0.06);
+        }
+
+        .trending-card--revealed.trending-card:hover {
+            transform: translateY(-8px);
+        }
+
+        .trending-card__rank {
+            font-family: 'Space Grotesk', sans-serif;
+            font-weight: 700;
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 0.15em;
+            color: var(--accent-primary);
+        }
+
+        .trending-card--featured .trending-card__rank {
+            font-size: 0.85rem;
+            color: var(--accent-primary);
+        }
+
+        .trending-card__title {
+            font-family: 'Fraunces', 'Georgia', serif;
+            font-weight: 600;
+            font-size: 1.1rem;
+            line-height: 1.25;
+            color: var(--text-deep);
+            letter-spacing: -0.01em;
+        }
+
+        .trending-card--featured .trending-card__title {
+            font-size: 1.8rem;
+            font-weight: 700;
+            line-height: 1.15;
+        }
+
+        .trending-card__score {
+            font-family: 'Inter', sans-serif;
+            font-weight: 700;
+            font-size: 1.4rem;
+            color: var(--accent-secondary);
+            letter-spacing: -0.02em;
+            margin-top: auto;
+        }
+
+        .trending-card--featured .trending-card__score {
+            font-size: 2rem;
+        }
+
+        .trending-card__meta {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 0.7rem;
+            color: var(--muted);
+            letter-spacing: 0.04em;
+        }
+
+        /* ============================================================
+        SECTION 4: FOOTER / DATA LAB
+        Live-updating comments list + credits with animated pattern
+        ============================================================ */
+        .data-lab {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: calc(var(--marquee-height) + 3rem) 3rem 3rem;
+            background: #FAF8F4;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Subtle animated pattern in background */
+        .data-lab__pattern {
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+            opacity: 0.04;
+            background-image: radial-gradient(circle, var(--accent-secondary) 1px, transparent 1px);
+            background-size: 40px 40px;
+            animation: pattern-drift 30s linear infinite;
+        }
+
+        @keyframes pattern-drift {
+            0% {
+                background-position: 0 0;
+            }
+            100% {
+                background-position: 40px 40px;
+            }
+        }
+
+        .data-lab__inner {
+            width: 100%;
+            max-width: 1200px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 1;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 3rem;
+        }
+
+        .data-lab__heading {
+            font-family: 'Fraunces', 'Georgia', serif;
+            font-size: 2rem;
+            font-weight: 700;
+            letter-spacing: -0.01em;
+            color: var(--text-deep);
+            margin-bottom: 1.5rem;
+        }
+
+        /* Comments list */
+        .comments-list {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .comment-item {
+            background: #FFFFFF;
+            border: 1px solid var(--card-border);
+            border-radius: 4px;
+            padding: 1.2rem 1.5rem;
+            transition: all var(--transition-snappy);
+            opacity: 0;
+            transform: translateY(30px);
+        }
+
+        .comment-item--revealed {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .comment-item:hover {
+            border-color: var(--accent-secondary);
+        }
+
+        .comment-item__author {
+            font-family: 'Space Grotesk', sans-serif;
+            font-weight: 700;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: var(--accent-primary);
+            margin-bottom: 0.3rem;
+        }
+
+        .comment-item__text {
+            font-family: 'Inter', sans-serif;
+            font-size: 0.9rem;
+            line-height: 1.5;
+            color: var(--text-deep);
+            /* Strip HTML tags for safe display */
+            word-break: break-word;
+        }
+
+        .comment-item__time {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 0.7rem;
+            color: var(--muted);
+            margin-top: 0.5rem;
+            letter-spacing: 0.04em;
+        }
+
+        /* Credits */
+        .credits {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .credits__title {
+            font-family: 'Fraunces', 'Georgia', serif;
+            font-size: 3rem;
+            font-weight: 900;
+            letter-spacing: -0.03em;
+            color: var(--text-deep);
+            margin-bottom: 0.5rem;
+        }
+
+        .credits__subtitle {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.15em;
+            color: var(--accent-secondary);
+            margin-bottom: 1.5rem;
+        }
+
+        .credits__description {
+            font-family: 'Inter', sans-serif;
+            font-size: 0.9rem;
+            line-height: 1.7;
+            color: var(--muted);
+            max-width: 400px;
+        }
+
+        .credits__accent {
+            display: inline-block;
+            width: 40px;
+            height: 3px;
+            background: var(--accent-primary);
+            margin: 1.5rem 0;
+            border-radius: 2px;
+        }
+
+        /* ============================================================
+        SCROLL-REVEAL UTILITY
+        Elements with .reveal-on-scroll get animated when visible
+        Staggered delays are applied via inline style or data attribute
+        ============================================================ */
+        .reveal-on-scroll {
+            opacity: 0;
+            transform: translateY(40px) scale(1.03);
+            transition: opacity 0.7s cubic-bezier(0.22, 0.61, 0.36, 1),
+                transform 0.7s cubic-bezier(0.22, 0.61, 0.36, 1);
+        }
+
+        .reveal-on-scroll--visible {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+        }
+
+        /* ============================================================
+        RESPONSIVE ADJUSTMENTS
+        ============================================================ */
+        @media (max-width: 1024px) {
+            .hero {
+                flex-direction: column;
+                min-height: auto;
+            }
+            .hero__left {
+                flex: 0 0 auto;
+                border-right: none;
+                border-bottom: 1px solid var(--card-border);
+                padding: 2rem;
+                flex-direction: row;
+                flex-wrap: wrap;
+                gap: 2rem;
+                align-items: center;
+                justify-content: space-between;
+            }
+            .hero__right {
+                flex: 0 0 auto;
+                padding: 2rem;
+            }
+            .pulse {
+                flex-direction: column;
+            }
+            .pulse__left {
+                border-right: none;
+                border-bottom: 1px solid var(--card-border);
+                padding: 2rem;
+            }
+            .pulse__right {
+                padding: 2rem;
+            }
+            .trending-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            .trending-card--featured {
+                grid-column: span 2;
+            }
+            .data-lab__inner {
+                grid-template-columns: 1fr;
+                gap: 2rem;
+            }
+            .headline-display {
+                font-size: clamp(2rem, 4vw, 4rem);
+            }
+            .clock__time {
+                font-size: 2.5rem;
+            }
+            .live-buzz__number {
+                font-size: 3.5rem;
+            }
+            .section {
+                padding: calc(var(--marquee-height) + 1.5rem) 1.5rem 1.5rem;
+            }
+        }
+
+        @media (max-width: 640px) {
+            .trending-grid {
+                grid-template-columns: 1fr;
+            }
+            .trending-card--featured {
+                grid-column: span 1;
+            }
+            .hero__left {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            .essence-blockquote {
+                font-size: 1.4rem;
+                padding-left: 1.5rem;
+            }
+            .section-heading {
+                font-size: 2rem;
+            }
+            .trending__heading {
+                font-size: 2rem;
+            }
+            .credits__title {
+                font-size: 2.2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ============================================================
+    MARQUEE TICKER — Persistent scrolling bar at the very top
+    Populated dynamically via JavaScript after fetching news
+    ============================================================ -->
+    <div class="marquee-ticker" id="marqueeTicker" aria-label="Live news ticker">
+        <div class="marquee-ticker__track" id="marqueeTrack">
+            <!-- Dynamically filled -->
+        </div>
+    </div>
+
+    <!-- ============================================================
+    SECTION 1: HERO
+    ============================================================ -->
+    <section class="section hero" id="sectionHero">
+        <div class="hero__left reveal-on-scroll" data-delay="0">
+            <!-- Live Clock -->
+            <div class="clock">
+                <div class="clock__date" id="clockDate">Loading...</div>
+                <div class="clock__time" id="clockTime">--:--:--</div>
+            </div>
+
+            <!-- Live Buzz Counter -->
+            <div class="live-buzz">
+                <div class="live-buzz__label">
+                    <span class="live-buzz__dot"></span> Live Buzz · Total Stories
+                </div>
+                <div>
+                    <span class="live-buzz__number" id="buzzCounter">0</span>
+                    <span class="live-buzz__suffix">stories</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="hero__right reveal-on-scroll" data-delay="0.15">
+            <!-- #1 Headline -->
+            <h1 class="headline-display" id="topHeadline">Loading top story&hellip;</h1>
+            <!-- AI Vibe Badge -->
+            <div class="vibe-badge" id="vibeBadge">
+                <span class="vibe-badge__dot"></span>
+                <span id="vibeText">Analyzing&hellip;</span>
+            </div>
+            <!-- AI Offline Banner (hidden by default) -->
+            <div class="ai-offline-banner" id="aiOfflineBanner" style="display:none;">
+                ⚡ AI Insight offline — showing raw data
+            </div>
+        </div>
+    </section>
+
+    <!-- ============================================================
+    SECTION 2: THE PULSE
+    ============================================================ -->
+    <section class="section pulse" id="sectionPulse">
+        <div class="pulse__left reveal-on-scroll" data-delay="0">
+            <span class="section-label">The Pulse</span>
+            <h2 class="section-heading">Disruption<br>Meter</h2>
+            <div class="disruption-meter">
+                <div class="disruption-meter__stats">
+                    <span class="disruption-meter__label">Top Story Weight</span>
+                    <span class="disruption-meter__value" id="disruptionValue">0%</span>
+                </div>
+                <div class="disruption-meter__track">
+                    <div class="disruption-meter__fill" id="disruptionFill" style="width: 0%;"></div>
+                </div>
+                <p class="disruption-meter__context" id="disruptionContext">
+                    Calculating relative dominance of the #1 story&hellip;
+                </p>
+            </div>
+        </div>
+
+        <div class="pulse__right reveal-on-scroll" data-delay="0.2">
+            <span class="section-label">AI Essence</span>
+            <blockquote class="essence-blockquote" id="essenceBlockquote">
+                <span id="essenceText">Awaiting AI analysis of the top headline&hellip;</span>
+                <span class="essence-blockquote__attribution">— VANTAGE Gemini Analysis</span>
+            </blockquote>
+        </div>
+    </section>
+
+    <!-- ============================================================
+    SECTION 3: TRENDING GRID
+    ============================================================ -->
+    <section class="section trending" id="sectionTrending">
+        <div class="trending__inner">
+            <div class="trending__header reveal-on-scroll" data-delay="0">
+                <h2 class="trending__heading">The Trending Grid</h2>
+                <span class="trending__subheading">Top 10 · Hacker News</span>
+            </div>
+            <div class="trending-grid" id="trendingGrid">
+                <!-- Dynamically filled -->
+            </div>
+        </div>
+    </section>
+
+    <!-- ============================================================
+    SECTION 4: FOOTER / DATA LAB
+    ============================================================ -->
+    <section class="section data-lab" id="sectionDataLab">
+        <div class="data-lab__pattern" aria-hidden="true"></div>
+        <div class="data-lab__inner">
+            <div class="reveal-on-scroll" data-delay="0">
+                <h2 class="data-lab__heading">Latest Commentary</h2>
+                <ul class="comments-list" id="commentsList">
+                    <li class="comment-item">
+                        <div class="comment-item__author">Loading&hellip;</div>
+                        <div class="comment-item__text">Fetching latest comments from the discourse&hellip;</div>
+                    </li>
+                </ul>
+            </div>
+            <div class="credits reveal-on-scroll" data-delay="0.2">
+                <div class="credits__title">VANTAGE</div>
+                <div class="credits__subtitle">Digital Zeitgeist Observatory</div>
+                <span class="credits__accent"></span>
+                <p class="credits__description">
+                    A real-time lens into the collective consciousness of the tech world.
+                    Powered by the Hacker News API and Google Gemini AI.
+                    Built for the curious, the observant, and the forward-thinking.
+                </p>
+                <p class="credits__description" style="margin-top:1rem; font-size:0.75rem; color: var(--muted);">
+                    Data refreshes on each page load. All times displayed in your local timezone.
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <script>
+        /* ============================================================
+        ╔══════════════════════════════════════════════════════════════╗
+        ║              S E T U P   I N S T R U C T I O N S           ║
+        ╠══════════════════════════════════════════════════════════════╣
+        ║ Step 1: Save this entire file as "index.html"              ║
+        ║ Step 2: Visit https://aistudio.google.com/apikey           ║
+        ║          Sign in with your Google account.                 ║
+        ║          Click "Create API Key" and copy the key.          ║
+        ║          (The free tier gives you generous usage limits.)  ║
+        ║ Step 3: Paste your API key between the quotes below.       ║
+        ║ Step 4: Open index.html in any modern browser.             ║
+        ║          No server required — it works directly!           ║
+        ║                                                            ║
+        ║ IMPORTANT: If you don't set the key, the app will          ║
+        ║ gracefully show an "AI Insight offline" banner and         ║
+        ║ continue to display all news data normally.                ║
+        ╚══════════════════════════════════════════════════════════════╝
+        ============================================================ */
+
+        // ★★★ PASTE YOUR GEMINI API KEY HERE ★★★
+        const GEMINI_API_KEY = ''; // <-- Paste between these quotes
+        // ★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★
+
+        // ============================================================
+        // GLOBAL STATE
+        // ============================================================
+        let topStoryIds = []; // Will hold all fetched story IDs
+        let stories = []; // Will hold the top 10 full story objects
+        let totalStoriesCount = 0; // Total number of top story IDs
+        let aiAnalysis = null; // { summary: string, vibe: string } or null
+        let comments = []; // Latest 5 comments from the top story
+
+        // ============================================================
+        // DOM REFERENCES (cached after DOMContentLoaded)
+        // ============================================================
+        let domClockDate, domClockTime, domBuzzCounter, domTopHeadline;
+        let domVibeBadge, domVibeText, domAiOfflineBanner;
+        let domDisruptionValue, domDisruptionFill, domDisruptionContext;
+        let domEssenceText, domTrendingGrid, domCommentsList;
+        let domMarqueeTrack;
+
+        // Cache DOM references once the document is ready
+        function cacheDomReferences() {
+            domClockDate = document.getElementById('clockDate');
+            domClockTime = document.getElementById('clockTime');
+            domBuzzCounter = document.getElementById('buzzCounter');
+            domTopHeadline = document.getElementById('topHeadline');
+            domVibeBadge = document.getElementById('vibeBadge');
+            domVibeText = document.getElementById('vibeText');
+            domAiOfflineBanner = document.getElementById('aiOfflineBanner');
+            domDisruptionValue = document.getElementById('disruptionValue');
+            domDisruptionFill = document.getElementById('disruptionFill');
+            domDisruptionContext = document.getElementById('disruptionContext');
+            domEssenceText = document.getElementById('essenceText');
+            domTrendingGrid = document.getElementById('trendingGrid');
+            domCommentsList = document.getElementById('commentsList');
+            domMarqueeTrack = document.getElementById('marqueeTrack');
+        }
+
+        // ============================================================
+        // UTILITY FUNCTIONS
+        // ============================================================
+
+        /**
+         * Formats a Unix timestamp (seconds) into a human-readable
+         * relative time string like "2 hours ago", "3 days ago".
+         */
+        function timeAgo(unixSeconds) {
+            const now = Math.floor(Date.now() / 1000);
+            const diff = now - unixSeconds;
+            if (diff < 60) return 'just now';
+            if (diff < 3600) return Math.floor(diff / 60) + 'm ago';
+            if (diff < 86400) return Math.floor(diff / 3600) + 'h ago';
+            if (diff < 604800) return Math.floor(diff / 86400) + 'd ago';
+            return new Date(unixSeconds * 1000).toLocaleDateString('en-US', {
+                month: 'short',
+                day: 'numeric',
+            });
+        }
+
+        /**
+         * Formats a number with commas (e.g., 1234 → "1,234").
+         */
+        function formatNumber(num) {
+            return num.toLocaleString('en-US');
+        }
+
+        /**
+         * Strips HTML tags from a string for safe display.
+         */
+        function stripHtml(html) {
+            const temp = document.createElement('div');
+            temp.innerHTML = html;
+            return temp.textContent || temp.innerText || '';
+        }
+
+        /**
+         * Truncates text to a max length, adding ellipsis if needed.
+         */
+        function truncateText(text, maxLen = 120) {
+            if (text.length <= maxLen) return text;
+            return text.substring(0, maxLen).trimEnd() + '…';
+        }
+
+        // ============================================================
+        // CLOCK — Live ticking clock updated every second
+        // Uses requestAnimationFrame-aligned setInterval for accuracy
+        // ============================================================
+        function updateClock() {
+            if (!domClockDate || !domClockTime) return;
+            const now = new Date();
+            const dateStr = now.toLocaleDateString('en-US', {
+                weekday: 'long',
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric',
+            });
+            const hours = String(now.getHours()).padStart(2, '0');
+            const minutes = String(now.getMinutes()).padStart(2, '0');
+            const seconds = String(now.getSeconds()).padStart(2, '0');
+            domClockDate.textContent = dateStr;
+            domClockTime.innerHTML = `${hours}:${minutes}<span class="clock__seconds">${seconds}</span>`;
+        }
+
+        function startClock() {
+            updateClock();
+            setInterval(updateClock, 1000);
+        }
+
+        // ============================================================
+        // ANIMATED COUNTER — Uses requestAnimationFrame for smooth
+        // counting from 0 to a target value over ~1.5 seconds
+        // ============================================================
+        function animateCounter(element, targetValue, durationMs = 1500) {
+            if (!element) return;
+            const startValue = 0;
+            const startTime = performance.now();
+
+            function step(currentTime) {
+                const elapsed = currentTime - startTime;
+                const progress = Math.min(elapsed / durationMs, 1.0);
+                // Ease-out cubic for a satisfying deceleration
+                const eased = 1 - Math.pow(1 - progress, 3);
+                const current = Math.round(startValue + (targetValue - startValue) * eased);
+                element.textContent = formatNumber(current);
+                if (progress < 1) {
+                    requestAnimationFrame(step);
+                } else {
+                    element.textContent = formatNumber(targetValue);
+                }
+            }
+
+            requestAnimationFrame(step);
+        }
+
+        // ============================================================
+        // HACKER NEWS API — Fetch top stories and individual items
+        // ============================================================
+        const HN_BASE = 'https://hacker-news.firebaseio.com/v0';
+
+        /**
+         * Fetches the list of top story IDs from Hacker News.
+         * Returns an array of IDs.
+         */
+        async function fetchTopStoryIds() {
+            const response = await fetch(`${HN_BASE}/topstories.json`);
+            if (!response.ok) throw new Error(`HN API error: ${response.status}`);
+            const ids = await response.json();
+            return ids; // Typically 500 IDs
+        }
+
+        /**
+         * Fetches a single story/item by its ID.
+         */
+        async function fetchItem(id) {
+            const response = await fetch(`${HN_BASE}/item/${id}.json`);
+            if (!response.ok) throw new Error(`Failed to fetch item ${id}`);
+            return await response.json();
+        }
+
+        /**
+         * Fetches multiple items in parallel.
+         */
+        async function fetchItems(ids) {
+            const promises = ids.map((id) => fetchItem(id));
+            return await Promise.all(promises);
+        }
+
+        // ============================================================
+        // GOOGLE GEMINI AI — Analyze the #1 story headline
+        // Uses the free-tier Gemini 1.5 Flash model
+        // ============================================================
+        async function analyzeWithGemini(headline) {
+            // If no API key is set, skip the AI call gracefully
+            if (!GEMINI_API_KEY || GEMINI_API_KEY.trim() === '') {
+                console.warn('[VANTAGE] No Gemini API key provided. Skipping AI analysis.');
+                return null;
+            }
+
+            const endpoint =
+                `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`;
+
+            const prompt =
+                `Summarize the essence of this news headline in under 15 words. Then assign a single-word emotional vibe (e.g., Chaotic, Hopeful, Disruptive, Calm, Electric, Ominous). Return ONLY valid JSON: {"summary": "...", "vibe": "..."}\n\nHeadline: "${headline}"`;
+
+            const body = {
+                contents: [{
+                    parts: [{ text: prompt }],
+                }, ],
+            };
+
+            try {
+                const response = await fetch(endpoint, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(body),
+                });
+
+                if (!response.ok) {
+                    console.error('[VANTAGE] Gemini API error:', response.status);
+                    return null;
+                }
+
+                const data = await response.json();
+                // Extract the text from the response
+                const rawText = data?.candidates?.[0]?.content?.parts?.[0]?.text;
+                if (!rawText) {
+                    console.warn('[VANTAGE] Unexpected Gemini response structure.');
+                    return null;
+                }
+
+                // The model might return JSON with or without markdown code fences
+                let jsonStr = rawText.trim();
+                // Strip markdown code fences if present
+                const codeFenceMatch = jsonStr.match(/```(?:json)?\s*([\s\S]*?)```/);
+                if (codeFenceMatch) {
+                    jsonStr = codeFenceMatch[1].trim();
+                }
+                // Attempt to find a JSON object in the text
+                const jsonMatch = jsonStr.match(/\{[\s\S]*\}/);
+                if (jsonMatch) {
+                    jsonStr = jsonMatch[0];
+                }
+
+                const parsed = JSON.parse(jsonStr);
+                if (parsed.summary && parsed.vibe) {
+                    return {
+                        summary: parsed.summary.trim(),
+                        vibe: parsed.vibe.trim(),
+                    };
+                }
+                console.warn('[VANTAGE] Gemini response missing expected fields:', parsed);
+                return null;
+            } catch (err) {
+                console.error('[VANTAGE] Gemini analysis failed:', err);
+                return null;
+            }
+        }
+
+        // ============================================================
+        // VIBE COLOR MAPPING
+        // Maps vibe words to accent colors from the design system
+        // ============================================================
+        function getVibeColor(vibeWord) {
+            const mapping = {
+                'chaotic': '#E85D04', // Primary
+                'disruptive': '#E85D04', // Primary
+                'electric': '#F9C846', // Tertiary
+                'hopeful': '#2EC4B6', // Secondary
+                'calm': '#2EC4B6', // Secondary
+                'ominous': '#5E5A6B', // Muted
+                'urgent': '#E85D04',
+                'innovative': '#2EC4B6',
+                'concerning': '#5E5A6B',
+                'exciting': '#F9C846',
+                'neutral': '#5E5A6B',
+                'inspiring': '#2EC4B6',
+                'alarming': '#E85D04',
+                'curious': '#F9C846',
+            };
+            const key = (vibeWord || '').toLowerCase().trim();
+            return mapping[key] || '#5E5A6B'; // Default to muted
+        }
+
+        // ============================================================
+        // RENDER FUNCTIONS — Build DOM for each section
+        // ============================================================
+
+        /**
+         * Renders the marquee ticker with the top 10 story titles.
+         * Content is duplicated for the infinite scroll effect.
+         */
+        function renderMarquee() {
+            if (!domMarqueeTrack) return;
+            if (stories.length === 0) {
+                domMarqueeTrack.innerHTML =
+                    '<div class="marquee-ticker__content"><span class="marquee-ticker__item">Loading stories&hellip;</span></div>';
+                return;
+            }
+
+            // Build the marquee content: titles separated by dots
+            const items = stories.map((s) => s.title).filter(Boolean);
+            const sep = '<span class="marquee-ticker__separator"></span>';
+            const contentHTML = items
+                .map((title) => `<span class="marquee-ticker__item">${escapeHtml(title)}</span>`)
+                .join(sep);
+
+            // Duplicate for seamless infinite scroll
+            const fullContent = contentHTML + sep + contentHTML;
+            domMarqueeTrack.innerHTML =
+                `<div class="marquee-ticker__content">${fullContent}</div><div class="marquee-ticker__content">${fullContent}</div>`;
+        }
+
+        /**
+         * Simple HTML escaping to prevent XSS in marquee and displays.
+         */
+        function escapeHtml(str) {
+            const div = document.createElement('div');
+            div.textContent = str;
+            return div.innerHTML;
+        }
+
+        /**
+         * Renders the Hero section with the #1 headline and AI vibe badge.
+         */
+        function renderHero() {
+            if (!domTopHeadline || stories.length === 0) return;
+
+            const topStory = stories[0];
+            // Display the headline in the massive Fraunces font
+            // Wrap the first few words in <em> for italic emphasis (swash effect)
+            const words = topStory.title.split(' ');
+            let displayTitle;
+            if (words.length >= 3) {
+                const emphasized = words.slice(0, Math.ceil(words.length * 0.35)).join(' ');
+                const rest = words.slice(Math.ceil(words.length * 0.35)).join(' ');
+                displayTitle = `<em>${escapeHtml(emphasized)}</em> ${escapeHtml(rest)}`;
+            } else {
+                displayTitle = escapeHtml(topStory.title);
+            }
+            domTopHeadline.innerHTML = displayTitle;
+
+            // Render the vibe badge
+            if (aiAnalysis && aiAnalysis.vibe) {
+                const vibeColor = getVibeColor(aiAnalysis.vibe);
+                domVibeBadge.classList.add('vibe-badge--active');
+                domVibeBadge.style.borderColor = vibeColor;
+                domVibeBadge.style.background = vibeColor + '12'; // Very subtle tint
+                const dotEl = domVibeBadge.querySelector('.vibe-badge__dot');
+                if (dotEl) dotEl.style.background = vibeColor;
+                domVibeText.textContent = aiAnalysis.vibe;
+                domVibeText.style.color = vibeColor;
+                domAiOfflineBanner.style.display = 'none';
+            } else {
+                // Show fallback
+                domVibeBadge.classList.remove('vibe-badge--active');
+                domVibeBadge.style.borderColor = '#E8E6E1';
+                domVibeBadge.style.background = '#FFFFFF';
+                const dotEl = domVibeBadge.querySelector('.vibe-badge__dot');
+                if (dotEl) dotEl.style.background = '#5E5A6B';
+                domVibeText.textContent = 'Unanalyzed';
+                domVibeText.style.color = '#5E5A6B';
+                domAiOfflineBanner.style.display = 'inline-flex';
+            }
+        }
+
+        /**
+         * Renders the Pulse section — Disruption Meter + Essence blockquote.
+         */
+        function renderPulse() {
+            if (stories.length === 0) return;
+
+            // Calculate disruption: top story score as % of total scores
+            const totalScore = stories.reduce((sum, s) => sum + (s.score || 0), 0);
+            const topScore = stories[0].score || 0;
+            const disruptionPercent = totalScore > 0 ? Math.round((topScore / totalScore) * 100) : 0;
+
+            // Update disruption meter
+            if (domDisruptionValue) {
+                domDisruptionValue.textContent = disruptionPercent + '%';
+            }
+            if (domDisruptionFill) {
+                // Trigger the CSS transition by setting width after a tiny delay
+                setTimeout(() => {
+                    domDisruptionFill.style.width = disruptionPercent + '%';
+                }, 200);
+            }
+            if (domDisruptionContext) {
+                domDisruptionContext.textContent =
+                    `The #1 story commands ${disruptionPercent}% of the total score across the top 10. ` +
+                    (disruptionPercent > 35 ?
+                        'A truly dominant narrative.' :
+                        disruptionPercent > 20 ?
+                        'A strong voice in today\'s discourse.' :
+                        'The conversation is broadly distributed.');
+            }
+
+            // Update essence blockquote
+            if (domEssenceText) {
+                if (aiAnalysis && aiAnalysis.summary) {
+                    domEssenceText.textContent = aiAnalysis.summary;
+                } else {
+                    domEssenceText.textContent =
+                        'AI analysis unavailable. The headline speaks for itself — raw, unfiltered, and waiting for interpretation.';
+                }
+            }
+        }
+
+        /**
+         * Renders the Trending Grid with all 10 stories.
+         * First story spans 2 columns (featured card).
+         */
+        function renderTrendingGrid() {
+            if (!domTrendingGrid || stories.length === 0) return;
+            domTrendingGrid.innerHTML = '';
+
+            stories.forEach((story, index) => {
+                const card = document.createElement('div');
+                card.className = 'trending-card';
+                if (index === 0) {
+                    card.classList.add('trending-card--featured');
+                }
+                // Add staggered delay for scroll-reveal
+                card.style.transitionDelay = `${index * 0.08}s`;
+                card.setAttribute('data-delay', index * 0.08);
+
+                const rank = document.createElement('div');
+                rank.className = 'trending-card__rank';
+                rank.textContent = `#${index + 1}`;
+
+                const title = document.createElement('div');
+                title.className = 'trending-card__title';
+                title.textContent = story.title || '(Untitled)';
+
+                const score = document.createElement('div');
+                score.className = 'trending-card__score';
+                score.textContent = '0'; // Will be animated
+                score.setAttribute('data-target', story.score || 0);
+
+                const meta = document.createElement('div');
+                meta.className = 'trending-card__meta';
+                const byline = story.by ? `by ${story.by}` : '';
+                const commentCount = story.descendants ? `${story.descendants} comments` : '';
+                meta.textContent = [byline, commentCount].filter(Boolean).join(' · ');
+
+                card.appendChild(rank);
+                card.appendChild(title);
+                card.appendChild(score);
+                card.appendChild(meta);
+
+                // Click navigates to the story URL or HN discussion
+                card.addEventListener('click', () => {
+                    const url = story.url ||
+                        `https://news.ycombinator.com/item?id=${story.id}`;
+                    window.open(url, '_blank', 'noopener');
+                });
+
+                domTrendingGrid.appendChild(card);
+            });
+
+            // After the grid is in the DOM, observe cards for scroll-reveal
+            observeRevealElements();
+            // Animate score counters when cards become visible
+            animateVisibleScores();
+        }
+
+        /**
+         * Animates score numbers inside trending cards that are visible.
+         */
+        function animateVisibleScores() {
+            const scoreEls = domTrendingGrid.querySelectorAll('.trending-card__score');
+            scoreEls.forEach((el) => {
+                const target = parseInt(el.getAttribute('data-target')) || 0;
+                // We'll animate when the card is revealed via Intersection Observer
+                el._scoreTarget = target;
+                el._scoreAnimated = false;
+            });
+        }
+
+        /**
+         * Renders the Comments section in the Data Lab.
+         */
+        function renderComments() {
+            if (!domCommentsList) return;
+            domCommentsList.innerHTML = '';
+
+            if (comments.length === 0) {
+                const li = document.createElement('li');
+                li.className = 'comment-item comment-item--revealed';
+                li.innerHTML = `
+                    <div class="comment-item__author">No Comments Yet</div>
+                    <div class="comment-item__text">Be the first to join the discussion on Hacker News.</div>
+                `;
+                domCommentsList.appendChild(li);
+                return;
+            }
+
+            comments.forEach((comment, index) => {
+                const li = document.createElement('li');
+                li.className = 'comment-item';
+                li.style.transitionDelay = `${index * 0.1}s`;
+                li.setAttribute('data-delay', index * 0.1);
+
+                const author = document.createElement('div');
+                author.className = 'comment-item__author';
+                author.textContent = comment.by || 'Anonymous';
+
+                const text = document.createElement('div');
+                text.className = 'comment-item__text';
+                const cleaned = stripHtml(comment.text || '');
+                text.textContent = truncateText(cleaned, 200);
+
+                const time = document.createElement('div');
+                time.className = 'comment-item__time';
+                time.textContent = timeAgo(comment.time);
+
+                li.appendChild(author);
+                li.appendChild(text);
+                li.appendChild(time);
+                domCommentsList.appendChild(li);
+            });
+
+            // Re-observe new comment elements
+            observeRevealElements();
+        }
+
+        // ============================================================
+        // SCROLL-REVEAL via Intersection Observer
+        // Observes elements with class .reveal-on-scroll or .trending-card
+        // and adds the --visible or --revealed class when they enter view
+        // ============================================================
+        let revealObserver = null;
+
+        function setupRevealObserver() {
+            if (revealObserver) revealObserver.disconnect();
+
+            revealObserver = new IntersectionObserver(
+                (entries) => {
+                    entries.forEach((entry) => {
+                        if (entry.isIntersecting) {
+                            const el = entry.target;
+                            // Handle .reveal-on-scroll elements
+                            if (el.classList.contains('reveal-on-scroll')) {
+                                const delay = parseFloat(el.getAttribute('data-delay')) || 0;
+                                el.style.transitionDelay = `${delay}s`;
+                                el.classList.add('reveal-on-scroll--visible');
+                            }
+                            // Handle .trending-card elements
+                            if (el.classList.contains('trending-card')) {
+                                const delay = parseFloat(el.getAttribute('data-delay')) || 0;
+                                el.style.transitionDelay = `${delay}s`;
+                                el.classList.add('trending-card--revealed');
+                                // Animate score counter if not yet animated
+                                const scoreEl = el.querySelector('.trending-card__score');
+                                if (scoreEl && !scoreEl._scoreAnimated) {
+                                    scoreEl._scoreAnimated = true;
+                                    const target = scoreEl._scoreTarget || 0;
+                                    animateCounter(scoreEl, target, 1200);
+                                }
+                            }
+                            // Handle .comment-item elements
+                            if (el.classList.contains('comment-item')) {
+                                const delay = parseFloat(el.getAttribute('data-delay')) || 0;
+                                el.style.transitionDelay = `${delay}s`;
+                                el.classList.add('comment-item--revealed');
+                            }
+                            // Stop observing once revealed
+                            revealObserver.unobserve(el);
+                        }
+                    });
+                }, {
+                    root: null, // viewport
+                    rootMargin: '0px 0px -60px 0px', // Trigger slightly before fully in view
+                    threshold: 0.1,
+                }
+            );
+        }
+
+        function observeRevealElements() {
+            if (!revealObserver) setupRevealObserver();
+            // Observe all reveal-on-scroll elements
+            document.querySelectorAll('.reveal-on-scroll:not(.reveal-on-scroll--visible)').forEach((el) => {
+                revealObserver.observe(el);
+            });
+            // Observe all trending cards not yet revealed
+            document.querySelectorAll('.trending-card:not(.trending-card--revealed)').forEach((el) => {
+                revealObserver.observe(el);
+            });
+            // Observe all comment items not yet revealed
+            document.querySelectorAll('.comment-item:not(.comment-item--revealed)').forEach((el) => {
+                revealObserver.observe(el);
+            });
+        }
+
+        // ============================================================
+        // DYNAMIC BACKGROUND SHIFT
+        // Subtly shifts the background color towards #2EC4B6 (teal)
+        // as the user scrolls down the page. Uses linear interpolation.
+        // ============================================================
+        function setupBackgroundShift() {
+            const bgR = 253,
+                bgG = 251,
+                bgB = 247; // #FDFBF7
+            const targetR = 46,
+                targetG = 196,
+                targetB = 182; // #2EC4B6
+            const maxBlend = 0.06; // Maximum 6% blend of the teal
+
+            function updateBackground() {
+                const scrollY = window.scrollY;
+                const maxScroll = document.documentElement.scrollHeight - window.innerHeight;
+                const progress = maxScroll > 0 ? Math.min(scrollY / maxScroll, 1) : 0;
+                const blend = progress * maxBlend;
+
+                const r = Math.round(bgR + (targetR - bgR) * blend);
+                const g = Math.round(bgG + (targetG - bgG) * blend);
+                const b = Math.round(bgB + (targetB - bgB) * blend);
+
+                document.body.style.backgroundColor = `rgb(${r}, ${g}, ${b})`;
+            }
+
+            // Use a throttled scroll listener for performance
+            let ticking = false;
+            window.addEventListener('scroll', () => {
+                if (!ticking) {
+                    requestAnimationFrame(() => {
+                        updateBackground();
+                        ticking = false;
+                    });
+                    ticking = true;
+                }
+            }, { passive: true });
+
+            // Initial call
+            updateBackground();
+        }
+
+        // ============================================================
+        // MAIN APPLICATION FLOW
+        // ============================================================
+        async function initApp() {
+            cacheDomReferences();
+            startClock();
+            setupRevealObserver();
+            setupBackgroundShift();
+
+            // Show initial loading state
+            if (domBuzzCounter) domBuzzCounter.textContent = '...';
+            if (domTopHeadline) domTopHeadline.textContent = 'Tuning into the zeitgeist…';
+
+            try {
+                // 1. Fetch all top story IDs
+                console.log('[VANTAGE] Fetching top story IDs...');
+                topStoryIds = await fetchTopStoryIds();
+                totalStoriesCount = topStoryIds.length;
+                console.log(`[VANTAGE] Fetched ${totalStoriesCount} story IDs.`);
+
+                // Animate the buzz counter
+                if (domBuzzCounter) {
+                    animateCounter(domBuzzCounter, totalStoriesCount, 1800);
+                }
+
+                // 2. Fetch details for the top 10 stories
+                const top10Ids = topStoryIds.slice(0, 10);
+                console.log('[VANTAGE] Fetching details for top 10 stories...');
+                stories = await fetchItems(top10Ids);
+                console.log('[VANTAGE] Top 10 stories fetched.');
+
+                // 3. Render marquee
+                renderMarquee();
+
+                // 4. AI Analysis for the #1 story
+                if (stories.length > 0 && GEMINI_API_KEY && GEMINI_API_KEY.trim() !== '') {
+                    console.log('[VANTAGE] Requesting Gemini AI analysis for top story...');
+                    aiAnalysis = await analyzeWithGemini(stories[0].title);
+                    if (aiAnalysis) {
+                        console.log('[VANTAGE] AI Analysis complete:', aiAnalysis);
+                    } else {
+                        console.warn('[VANTAGE] AI Analysis returned null — using fallback.');
+                    }
+                } else {
+                    console.log('[VANTAGE] Skipping AI analysis (no API key provided).');
+                }
+
+                // 5. Render Hero & Pulse sections
+                renderHero();
+                renderPulse();
+
+                // 6. Render Trending Grid
+                renderTrendingGrid();
+
+                // 7. Fetch comments from the top story's kids
+                if (stories.length > 0 && stories[0].kids && stories[0].kids.length > 0) {
+                    const commentIds = stories[0].kids.slice(0, 5);
+                    console.log(`[VANTAGE] Fetching ${commentIds.length} comments...`);
+                    const fetchedComments = await fetchItems(commentIds);
+                    comments = fetchedComments.filter((c) => c && !c.deleted && c.text);
+                    console.log(`[VANTAGE] Fetched ${comments.length} valid comments.`);
+                } else {
+                    console.log('[VANTAGE] No comments available for the top story.');
+                    comments = [];
+                }
+                renderComments();
+
+                // 8. Final observation pass for any newly added elements
+                observeRevealElements();
+
+                // 9. Trigger disruption meter fill animation after a short delay
+                setTimeout(() => {
+                    if (domDisruptionFill && stories.length > 0) {
+                        const totalScore = stories.reduce((sum, s) => sum + (s.score || 0), 0);
+                        const topScore = stories[0].score || 0;
+                        const pct = totalScore > 0 ? Math.round((topScore / totalScore) * 100) : 0;
+                        domDisruptionFill.style.width = pct + '%';
+                    }
+                }, 600);
+
+                console.log('[VANTAGE] ✅ Application fully initialized.');
+
+            } catch (err) {
+                console.error('[VANTAGE] Initialization error:', err);
+                // Graceful degradation: show error state in the UI
+                if (domTopHeadline) {
+                    domTopHeadline.textContent = 'Unable to reach the zeitgeist right now.';
+                }
+                if (domBuzzCounter) {
+                    domBuzzCounter.textContent = '—';
+                }
+                if (domAiOfflineBanner) {
+                    domAiOfflineBanner.style.display = 'inline-flex';
+                    domAiOfflineBanner.textContent = '⚠️ Data feed disrupted — please refresh';
+                }
+                if (domEssenceText) {
+                    domEssenceText.textContent =
+                        'The observatory is experiencing turbulence. Please refresh the page to reconnect with the digital pulse.';
+                }
+            }
+        }
+
+        // ============================================================
+        // LAUNCH — Wait for DOMContentLoaded then start the app
+        // ============================================================
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log('%c🚀 VANTAGE %cReal-Time Digital Zeitgeist Observatory',
+                'font-size:1.4em;font-weight:bold;color:#E85D04;',
+                'font-size:1em;color:#5E5A6B;');
+            console.log('%cBuilt with Hacker News API + Google Gemini AI',
+                'color:#2EC4B6;font-style:italic;');
+            initApp();
+        });
+    </script>
+</body>
+</html>
