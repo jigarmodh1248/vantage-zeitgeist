@@ -5,9 +5,9 @@ A bold, editorial live dashboard that surfaces the top tech stories from [Hacker
 Live clock, buzz counter, marquee ticker, disruption meter, and a responsive trending grid – all in a single HTML file with zero build tools.
 
 <img width="1347" height="768" alt="AI1" src="https://github.com/user-attachments/assets/3bf01fd1-da16-4dbf-826c-6988f8afa664" />
-<img width="1349" height="768" alt="AI4" src="https://github.com/user-attachments/assets/33c83d83-35c9-4ffe-b6a7-8c993b93dfff" />
-<img width="1349" height="768" alt="AI3" src="https://github.com/user-attachments/assets/d1def749-351b-4454-a9d9-a31dcee83ef2" />
 <img width="1349" height="768" alt="AI2" src="https://github.com/user-attachments/assets/7f50da98-646f-43c2-92cb-6c78663ac5ee" />
+<img width="1349" height="768" alt="AI3" src="https://github.com/user-attachments/assets/d1def749-351b-4454-a9d9-a31dcee83ef2" />
+<img width="1349" height="768" alt="AI4" src="https://github.com/user-attachments/assets/33c83d83-35c9-4ffe-b6a7-8c993b93dfff" />
 
 
 ## ✨ Features
